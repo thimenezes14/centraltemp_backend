@@ -3,7 +3,7 @@ const {Model, DataTypes} = require('sequelize');
 class Perfil extends Model {
     static init(sequelize) {
         super.init({
-            id: {
+            id_perfil: {
                 type: DataTypes.UUID,
                 primaryKey: true,
                 defaultValue: DataTypes.UUIDV4
@@ -20,11 +20,11 @@ class Perfil extends Model {
     }
 
     static associate(models) {
-
+        this.hasMany(models.Banho, {
+            as: 'perfil',
+            foreignKey: 'id_perfil'
+        })
     }
 }
 
 module.exports = Perfil;
-
-//No método "define", inserir nome da model.
-//Na propriedade "tableName", inserir nome da tabela.

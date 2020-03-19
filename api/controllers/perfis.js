@@ -10,7 +10,7 @@ const verificarHash = require('../helpers/hashing').compare;
 module.exports = {
     async listar(req, res) {
         await Perfil.findAll({
-            attributes: ['id', 'nome', 'sexo', [sequelize.fn('to_char', sequelize.col('data_nasc'), 'dd/mm/YYYY'), 'data_nasc'], 'avatar'],
+            attributes: ['id_perfil', 'nome', 'sexo', [sequelize.fn('to_char', sequelize.col('data_nasc'), 'dd/mm/YYYY'), 'data_nasc'], 'avatar'],
             order: [
                 ['nome', 'ASC']
             ]
@@ -43,8 +43,8 @@ module.exports = {
             return res.status(401).send("O ID informado difere do informado no token. ");
 
         await Perfil.findOne({
-            attributes: ['id', 'nome', 'sexo', [sequelize.fn('to_char', sequelize.col('data_nasc'), 'dd/mm/YYYY'), 'data_nasc'], 'avatar'],
-            where: { id }
+            attributes: ['id_perfil', 'nome', 'sexo', [sequelize.fn('to_char', sequelize.col('data_nasc'), 'dd/mm/YYYY'), 'data_nasc'], 'avatar'],
+            where: { id_perfil: id }
         })
             .then(perfil => { return res.status(200).json(perfil) })
             .catch(err => { return res.status(500).send(`Erro: ${err}`) })
@@ -56,8 +56,8 @@ module.exports = {
             return res.status(400).send("ID e/ou Senha não fornecidos. ");
 
             await Perfil.findOne({
-                attributes: ['id', 'senha'],
-                where: { id }
+                attributes: ['id_perfil', 'senha'],
+                where: { id_perfil: id }
             })
                 .then(async perfil => {
 
@@ -66,7 +66,7 @@ module.exports = {
                             return res.status(401).send("ID e/ou Senha inválidos. ");
     
                         const token = await jwt.sign({
-                            id: perfil.id
+                            id: perfil.id_perfil
                         },
                             process.env.JWT_SECRET,
                             {
@@ -105,7 +105,7 @@ module.exports = {
             campos.avatar = avatar;
         }
 
-        await Perfil.update(campos, { where: { id } })
+        await Perfil.update(campos, { where: { id_perfil: id } })
                 .then(() => { return res.status(200).send() })
                 .catch(err => { return res.status(500).send(`Erro: ${err}`) })
 
@@ -120,7 +120,7 @@ module.exports = {
         if (id !== token.id)
             return res.status(403).send("O ID informado difere do informado no token. ");
 
-        Perfil.destroy({ where: { id } })
+        Perfil.destroy({ where: { id_perfil: id } })
             .then(() => { return res.status(202).send() })
             .catch(err => { return res.status(500).send(`Erro: ${err}`) })
     }

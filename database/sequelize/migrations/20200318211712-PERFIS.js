@@ -3,7 +3,7 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
       return queryInterface.createTable('perfis', { 
-        id: {
+        id_perfil: {
           type: Sequelize.UUID,
           primaryKey: true,
           allowNull: false,

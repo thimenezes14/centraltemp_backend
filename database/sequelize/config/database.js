@@ -1,3 +1,4 @@
+require('dotenv/config');
 module.exports = {
   username: process.env.SQL_USER,
   password: process.env.SQL_PASS,

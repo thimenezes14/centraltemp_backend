@@ -9,8 +9,8 @@ module.exports = (req, res, next) => {
         return res.status(400).send("Não foram informados dados para verificação. ");
 
     Perfil.findOne({
-        attributes: ['id', 'senha'],
-        where: {id: token}
+        attributes: ['id_perfil', 'senha'],
+        where: {id_perfil: token}
     })
         .then(perfil => {
             

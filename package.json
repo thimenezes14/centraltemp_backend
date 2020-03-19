@@ -12,11 +12,13 @@
   "author": "Thiago S Menezes",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.19.2",
     "bcrypt-nodejs": "0.0.3",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-validator": "^6.4.0",
     "jsonwebtoken": "^8.5.1",
+    "moment": "^2.24.0",
     "mongoose": "^5.9.5",
     "morgan": "^1.9.1",
     "pg": "^7.18.2",
