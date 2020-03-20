@@ -1,9 +1,10 @@
 {
   "chuveiro": {
-    "id_banho": "803d572a-ef37-4563-8b17-600a262e9758",
+    "id_banho": "db1307bf-8fb1-4283-82cd-d14952f4be5f",
     "id_perfil": "b9942e72-459d-4466-991d-f24b41e90b63",
-    "temp_escolhida": 37,
-    "temp_final": 37,
+    "temp_escolhida": 39,
+    "temp_final": 41,
+    "duracao": 423,
     "ligado": false
   }
 }
