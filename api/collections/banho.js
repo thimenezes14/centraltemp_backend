@@ -1,7 +1,12 @@
 const mongoose = require('mongoose');
 
 const Banho = new mongoose.Schema({
-    idUsuario: {
+    id_banho: {
+        type: String,
+        required: true,
+        match: /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/
+    },
+    id_perfil: {
         type: String,
         required: true,
         match: /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/

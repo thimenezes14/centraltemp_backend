@@ -21,15 +21,6 @@ module.exports = {
           type: Sequelize.INTEGER,
           allowNull: false,
         },
-        temp_final: {
-          type: Sequelize.INTEGER,
-          allowNull: true,
-        },
-        ativo: {
-          type: Sequelize.BOOLEAN,
-          allowNull: false,
-          defaultValue: true
-        },
         created_at: {
           type: Sequelize.DATE,
           allowNull: false,

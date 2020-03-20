@@ -1,9 +1,9 @@
 const Sequelize = require('sequelize');
 const db = require('./config/database');
+const conn = new Sequelize(db);
 
 const Perfil = require('../../api/models/Perfil');
 const Banho = require('../../api/models/Banho');
-const conn = new Sequelize(db);
 
 Perfil.init(conn);
 Banho.init(conn);

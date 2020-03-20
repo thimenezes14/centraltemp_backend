@@ -1,5 +1,4 @@
 const {Model, DataTypes} = require('sequelize');
-const sequelize = require('sequelize');
 
 class Banho extends Model {
     static init(sequelize) {
@@ -17,11 +16,7 @@ class Banho extends Model {
                 },
                 onDelete: 'CASCADE'
             },
-            temp_escolhida: DataTypes.INTEGER,
-            ativo: {
-                type: DataTypes.BOOLEAN,
-                defaultValue: true
-            },
+            temp_escolhida: DataTypes.INTEGER
         }, {
             sequelize,
             tableName: 'banhos',
