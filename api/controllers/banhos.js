@@ -1,9 +1,13 @@
 const { validationResult } = require('express-validator');
 const Banho = require('../models/Banho');
 const BanhoHist = require('../collections/banho');
+const Preferencia = require('../models/Preferencia');
 const chuveiroAPI = require('../config/requestChuveiroESP');
 
+const calcularPreferencias = require('../helpers/calcularTemperaturaRecomendada');
+
 module.exports = {
+
     async listar(req, res) {
         try {
             await Banho.findAll({
@@ -76,9 +80,10 @@ module.exports = {
 
             try {
                 const banho = await Banho.create({ id_perfil, temp_escolhida }, { transaction: t });
+                const sensor = (await chuveiroAPI.get('/sensor')).data;
 
-                //Adicionar tempo de duração e temperatura final apenas como exemplo. Remover campos quando ESP for integrada.
-                await chuveiroAPI.post('/chuveiro', { id_banho: banho.id_banho, id_perfil, temp_escolhida, temp_final: temp_escolhida, duracao: 300, ligado: true })
+                //Adicionar tempo de duração, temperatura ambiente e temperatura final apenas como exemplo. Remover campos quando ESP for integrada.
+                await chuveiroAPI.post('/chuveiro', { id_banho: banho.id_banho, id_perfil, temp_escolhida, temp_ambiente: sensor.temperatura, temp_final: temp_escolhida, duracao_seg: 300, ligado: true })
                     .then(async () => {
                         await t.commit();
                         res.status(201).send();
@@ -89,12 +94,24 @@ module.exports = {
                     })
             } catch (err) {
                 await t.rollback();
+                return res.status(500).send(`Erro: ${err}`);
             }
         } catch (err) {
             res.status(500).send(`Erro: ${err}`);
         }
     },
+    async recomendar(req, res) {
+        const { token } = res.locals;
+        try {
+            const sensor = (await chuveiroAPI.get('/sensor')).data;
+            const banhos = Array(await BanhoHist.find({id_perfil: token.id}))[0];
+            const temp_recomendada = await calcularPreferencias(banhos, sensor.temperatura);
+            return res.status(200).json(temp_recomendada);
+        } catch (err) {
+            return res.status(500).send(`Erro: ${err}`);
+        }
+    },
     async finalizar(req, res) {
-        res.status(200).send("Banho finalizado! ");
+        return res.status(200).send("Banho finalizado! ");
     }
 }

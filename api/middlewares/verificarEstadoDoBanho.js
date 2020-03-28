@@ -1,4 +1,3 @@
-const moment = require('moment');
 const chuveiroAPI = require('../config/requestChuveiroESP');
 const Banho = require('../models/Banho');
 const BanhoHist = require('../collections/banho');
@@ -19,27 +18,27 @@ module.exports = async (req, res, next) => {
     try {
         await chuveiroAPI.get('/chuveiro')
             .then(async chuveiro => {
-                let { id_banho, id_perfil, temp_escolhida, temp_final, duracao, ligado } = chuveiro.data;
+                let { id_banho, id_perfil, temp_ambiente, temp_escolhida, temp_final, duracao_seg, ligado } = chuveiro.data;
 
                 if (ligado)
-                    return res.status(403).send("Chuveiro já ligado. Aguarde o desligamento para solicitar outro banho. ");
+                    return res.status(403).send("Chuveiro ligado. Aguarde o seu desligamento para finalizar ou solicitar um banho. ");
 
                 await Banho.findAndCountAll()
                     .then(async resultado => {
                         if (resultado.count > 0) {
                         
                             const histData = { 
-                                id_banho,
                                 id_perfil,
+                                temp_ambiente,
                                 temp_escolhida,
                                 temp_final,
-                                duracao_hhmmss: converteParaHoraMinutoSegundo(duracao)
+                                duracao_seg
                             };
 
                             const t = await Banho.sequelize.transaction({ autocommit: false });
 
                             try {
-                                await Banho.destroy({ where: { id_banho: histData.id_banho } }, { transaction: t })
+                                await Banho.destroy({ where: { id_banho } }, { transaction: t })
                                     .then(async () => {
                                         await new BanhoHist(histData).save()
                                             .then(() => {
@@ -58,6 +57,8 @@ module.exports = async (req, res, next) => {
                                 return res.status(500).send(`Erro: ${err}`);
                             }
                         } else {
+                            res.locals.id_perfil = id_perfil;
+                            res.locals.count = resultado.count;
                             next();
                         }
 

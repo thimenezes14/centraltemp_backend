@@ -20,10 +20,14 @@ class Perfil extends Model {
     }
 
     static associate(models) {
-        this.hasMany(models.Banho, {
-            as: 'perfil',
+        this.hasOne(models.Banho, {
+            as: 'banho_ativo',
             foreignKey: 'id_perfil'
-        })
+        });
+        this.hasOne(models.Preferencia, {
+            as: 'preferencia',
+            foreignKey: 'id_perfil'
+        });
     }
 }
 

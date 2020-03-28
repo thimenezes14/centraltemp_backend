@@ -3,6 +3,8 @@ const {validationResult} = require('express-validator');
 const jwt = require('jsonwebtoken');
 
 const Perfil = require('../models/Perfil');
+const Preferencia = require('../models/Preferencia');
+const Banho = require('../models/Banho');
 
 const gerarHash = require('../helpers/hashing').hash;
 const verificarHash = require('../helpers/hashing').compare;
@@ -26,10 +28,19 @@ module.exports = {
             return res.status(422).json({ err: errors.array().map(item => { return item.msg }) });
         }
 
-       let hash = await gerarHash(senha);
-       await Perfil.create({nome, senha: hash, sexo, data_nasc, avatar})
-                .then(() => { return res.status(201).send() })
-                .catch(err => { return res.status(500).send(`Erro: ${err}`) })
+       const t = await Perfil.sequelize.transaction({autocommit: false});
+
+       try {
+           let hash = await gerarHash(senha);
+           const perfil = await Perfil.create({nome, senha: hash, sexo, data_nasc, avatar}, {transaction: t});
+           await Preferencia.create({id_perfil: perfil.id_perfil}, {transaction: t})
+
+           await t.commit();
+           return res.status(201).send();
+       } catch (err) {
+           await t.rollback();
+           return res.status(500).send(`Erro: ${err}`);
+       }
 
     },
     async detalhar(req, res) {
@@ -42,12 +53,21 @@ module.exports = {
         if(id !== token.id)
             return res.status(401).send("O ID informado difere do informado no token. ");
 
-        await Perfil.findOne({
-            attributes: ['id_perfil', 'nome', 'sexo', [sequelize.fn('to_char', sequelize.col('data_nasc'), 'dd/mm/YYYY'), 'data_nasc'], 'avatar'],
-            where: { id_perfil: id }
-        })
-            .then(perfil => { return res.status(200).json(perfil) })
-            .catch(err => { return res.status(500).send(`Erro: ${err}`) })
+        try {
+            const perfil = await Perfil.findOne({
+                attributes: ['id_perfil', 'nome', 'sexo', [sequelize.fn('to_char', sequelize.col('data_nasc'), 'dd/mm/YYYY'), 'data_nasc'], 'avatar'],
+                include: [
+                            {model: Preferencia, as: 'preferencia', attributes: ['temp_frio', 'temp_morno', 'temp_quente']},
+                            {model: Banho, as: 'banho_ativo', attributes: ['id_banho', 'temp_escolhida']}
+                         ],
+                where: { id_perfil: id }
+            });
+
+            return res.status(200).json(perfil);
+        } catch (err) {
+            return res.status(500).send(`Erro: ${err}`);
+        }
+
     },
     async autenticar(req, res) {
         const {id, senha} = req.body;
@@ -70,7 +90,7 @@ module.exports = {
                         },
                             process.env.JWT_SECRET,
                             {
-                                expiresIn: "5m"
+                                expiresIn: "1h"
                             }
                         );
     

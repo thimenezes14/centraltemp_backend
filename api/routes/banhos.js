@@ -9,8 +9,9 @@ const pathname = '/banhos';
 routes.get(`${pathname}/listar`, banhosController.listar);
 routes.get(`${pathname}/historico/perfil`, verificarToken, banhosController.listarHistoricoPorPerfil);
 routes.get(`${pathname}/historico/banho`, verificarToken, banhosController.detalharBanho);
+routes.get(`${pathname}/recomendartemperatura`, verificarToken, banhosController.recomendar);
 
-routes.post(`${pathname}/finalizar`, verificarToken, verificarBanho, banhosController.finalizar);
+routes.post(`${pathname}/finalizar`, verificarBanho, banhosController.finalizar);
 routes.post(`${pathname}/registrar`, verificarToken, verificarBanho, validarDados, banhosController.registrar);
 
 
