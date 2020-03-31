@@ -12,7 +12,7 @@ const verificarHash = require('../helpers/hashing').compare;
 module.exports = {
     async listar(req, res) {
         await Perfil.findAll({
-            attributes: ['id_perfil', 'nome', 'sexo', [sequelize.fn('to_char', sequelize.col('data_nasc'), 'dd/mm/YYYY'), 'data_nasc'], 'avatar'],
+            attributes: ['id_perfil', 'nome', 'avatar'],
             order: [
                 ['nome', 'ASC']
             ]
