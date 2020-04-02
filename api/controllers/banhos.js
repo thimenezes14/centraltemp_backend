@@ -1,24 +1,19 @@
 const { validationResult } = require('express-validator');
 const Banho = require('../models/Banho');
 const BanhoHist = require('../collections/banho');
-const Preferencia = require('../models/Preferencia');
 const chuveiroAPI = require('../config/requestChuveiroESP');
 
 const calcularPreferencias = require('../helpers/calcularTemperaturaRecomendada');
 
 module.exports = {
 
-    async listar(req, res) {
+    async verificarChuveiro(req, res) {
         try {
-            await Banho.findAll({
-                attributes: ['id_banho', 'id_perfil', 'temp_escolhida']
-            })
-                .then(banhos => { return res.status(200).json(banhos) })
-                .catch(err => { return res.status(500).send(`Erro: ${err}`) })
+            const {ligado} = (await chuveiroAPI.get('/chuveiro')).data;
+            return res.status(200).send(ligado);
         } catch (err) {
-            res.status(500).send(`Erro: ${err}`)
+            return res.status(500).send(`Erro: ${err}`);
         }
-
     },
     async listarHistoricoPorPerfil(req, res) {
         try {
@@ -105,10 +100,10 @@ module.exports = {
         try {
             const sensor = (await chuveiroAPI.get('/sensor')).data;
             const banhos = Array(await BanhoHist.find({id_perfil: token.id}))[0];
-            const temp_recomendada = await calcularPreferencias(banhos, sensor.temperatura);
-            return res.status(200).json(temp_recomendada);
+            const recomendacoes = await calcularPreferencias(banhos, sensor.temperatura);
+            return res.status(200).json(recomendacoes);
         } catch (err) {
-            return res.status(500).send(`Erro: ${err}`);
+            return res.status(500).send(`Não foi possível recomendar temperatura para banho. Erro: ${err}`);
         }
     },
     async finalizar(req, res) {
