@@ -6,6 +6,7 @@ const verificarToken = require('../middlewares/verificarToken');
 const pathname = '/perfis';
 
 routes.get(`${pathname}/listar`, perfisController.listar);
+routes.get(`${pathname}/imagens`, perfisController.listarImagensParaPerfil);
 routes.get(`${pathname}/:id`, verificarToken, perfisController.detalhar);
 
 routes.post(`${pathname}/cadastrar`, verificarDados.cadastro, perfisController.cadastrar);

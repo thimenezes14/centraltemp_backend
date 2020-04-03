@@ -3,7 +3,7 @@ const Banho = require('../models/Banho');
 const BanhoHist = require('../collections/banho');
 
 function pad(num) {
-    return ("0"+ num ).slice(-2);
+    return ("0" + num).slice(-2);
 }
 
 function converteParaHoraMinutoSegundo(segundos) {
@@ -23,48 +23,49 @@ module.exports = async (req, res, next) => {
                 if (ligado)
                     return res.status(403).send("Chuveiro ligado. Aguarde o seu desligamento para finalizar ou solicitar um banho. ");
 
-                await Banho.findAndCountAll()
-                    .then(async resultado => {
-                        if (resultado.count > 0) {
-                        
-                            const histData = { 
-                                id_perfil,
-                                temp_ambiente,
-                                temp_escolhida,
-                                temp_final,
-                                duracao_seg
-                            };
+                if (id_banho) {
+                    await Banho.findAndCountAll()
+                        .then(async resultado => {
+                            if (resultado.count > 0) {
 
-                            const t = await Banho.sequelize.transaction({ autocommit: false });
+                                const histData = {
+                                    id_perfil,
+                                    temp_ambiente,
+                                    temp_escolhida,
+                                    temp_final,
+                                    duracao_seg
+                                };
 
-                            try {
-                                await Banho.destroy({ where: { id_banho } }, { transaction: t })
-                                    .then(async () => {
-                                        await new BanhoHist(histData).save()
-                                            .then(() => {
-                                                console.log("Histórico criado. ");
-                                                t.commit();
-                                                next();
-                                            })
-                                            .catch(err => {
-                                                t.rollback();
-                                                return res.status(500).send(`Erro: ${err}`)
-                                            })
-                                    })
-                                    .catch(err => { return res.status(500).send(`Erro: ${err}`) })
-                            } catch (err) {
-                                t.rollback();
-                                return res.status(500).send(`Erro: ${err}`);
+                                const t = await Banho.sequelize.transaction({ autocommit: false });
+
+                                try {
+                                    await Banho.destroy({ where: { id_banho } }, { transaction: t })
+                                        .then(async () => {
+                                            await new BanhoHist(histData).save()
+                                                .then(() => {
+                                                    console.log("Histórico criado. ");
+                                                    t.commit();
+                                                    next();
+                                                })
+                                                .catch(err => {
+                                                    t.rollback();
+                                                    return res.status(500).send(`Erro: ${err}`)
+                                                })
+                                        })
+                                        .catch(err => { return res.status(500).send(`Erro: ${err}`) })
+                                } catch (err) {
+                                    t.rollback();
+                                    return res.status(500).send(`Erro: ${err}`);
+                                }
+                            } else {
+                                next();
                             }
-                        } else {
-                            res.locals.id_perfil = id_perfil;
-                            res.locals.count = resultado.count;
-                            next();
-                        }
 
-                    })
-                    .catch(err => { res.status(500).send(`Erro: ${err}`) })
-
+                        })
+                        .catch(err => { res.status(500).send(`Erro: ${err}`) })
+                } else {
+                    next();
+                }
             })
             .catch(err => { return res.status(500).send(`Erro: ${err}`) });
     } catch (err) {

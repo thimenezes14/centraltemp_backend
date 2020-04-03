@@ -24,10 +24,6 @@ class Perfil extends Model {
             as: 'banho_ativo',
             foreignKey: 'id_perfil'
         });
-        this.hasOne(models.Preferencia, {
-            as: 'preferencia',
-            foreignKey: 'id_perfil'
-        });
     }
 }
 

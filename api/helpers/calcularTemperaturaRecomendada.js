@@ -39,12 +39,10 @@ module.exports = async (dados, temp_ambiente) => {
         temperatura = temp_ambiente;
     }
 
-    let limites = {};
     const {min, max} = TEMP_AMBIENTE_AMENO;
     let x = [[TEMP_AMB_MIN], [(min + max) / 2]];
     let y = [[TEMP_CHUV_MAX], [TEMP_BANHO_IDEAL]];
-    
-    if(dados.length > MIN_BANHOS) {
+    let limites = {};
         
         let filtro;
         if(temperatura < TEMP_AMBIENTE_AMENO.min) {
@@ -62,7 +60,6 @@ module.exports = async (dados, temp_ambiente) => {
             x = await filtro.map(dado => [dado.temp_ambiente]);
             y = await filtro.map(dado => [dado.temp_final]);
         }
-    }
 
     const mlr = await new MLR(x, y, {intercept: true});
     //console.log(mlr.toJSON().summary.variables);

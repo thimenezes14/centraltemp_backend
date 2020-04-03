@@ -13,6 +13,6 @@ routes.get(`${pathname}/recomendartemperatura`, verificarToken, banhosController
 
 routes.post(`${pathname}/finalizar`, verificarBanho, banhosController.finalizar);
 routes.post(`${pathname}/registrar`, verificarToken, verificarBanho, validarDados, banhosController.registrar);
-
+routes.post(`${pathname}/ligarchuveiromanual`, verificarBanho, banhosController.ligarChuveiroManual);
 
 module.exports = routes;

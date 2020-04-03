@@ -9,8 +9,9 @@ module.exports = {
 
     async verificarChuveiro(req, res) {
         try {
-            const {ligado} = (await chuveiroAPI.get('/chuveiro')).data;
-            return res.status(200).send(ligado);
+            const {ligado, temp_final} = (await chuveiroAPI.get('/chuveiro')).data;
+            const dados = {ligado, temperatura: temp_final};
+            return res.status(200).send(dados);
         } catch (err) {
             return res.status(500).send(`Erro: ${err}`);
         }
@@ -108,5 +109,14 @@ module.exports = {
     },
     async finalizar(req, res) {
         return res.status(200).send("Banho finalizado! ");
+    },
+    async ligarChuveiroManual(req, res) {
+        const {temperatura} = req.body;
+        try {
+            await chuveiroAPI.post('/chuveiro', { temp_escolhida: temperatura, temp_final: temperatura, ligado: true })
+            res.status(201).json({temperatura, ligado: true});
+        } catch (err) {
+            return res.status(500).send(`Erro: ${err}`)
+        }
     }
 }

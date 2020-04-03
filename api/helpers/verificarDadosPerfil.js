@@ -33,12 +33,6 @@ module.exports.atualizacao = [
         .withMessage('Por favor, forneça uma senha numérica de 4 dígitos. '),
 
     check('avatar')
-        .custom(val => {
-            if(val && val.length < 5) // um nome de um caractere seguido de .ext
-                return false
-            else
-                return true
-        })
+        .matches(/([a-zA-Z0-9\s_\\.\-\(\):])+(.png|.jpg|.jpeg)$/)
         .withMessage('Por favor, selecione um avatar válido. '),
-
 ]

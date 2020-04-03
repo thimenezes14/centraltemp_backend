@@ -4,7 +4,9 @@
   "description": "Sistema de Preparo Automático de Banho CentralTemp",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index"
   },
   "repository": {
     "url": "https://github.com/thimenezes14/centraltemp_backend.git"

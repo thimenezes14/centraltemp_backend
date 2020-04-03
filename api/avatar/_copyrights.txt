@@ -1,0 +1,8 @@
+Todas as imagens-padrão foram obtidas por terceiros:
+
+default: https://www.mavencube.com/images/testimonial/default-user.png
+flower: https://pics.clipartpng.com/Pink_Flower_PNG_Clipart-173.png
+heart: https://pluspng.com/img-png/heart-png-heart-png-image-free-download-2555.png
+plane: https://lh3.googleusercontent.com/proxy/DjjTNgnQdoXLYpCZgp-fZCTCc1eg58zuUbmL-lLEgUrfKAFnehSUb2Iav3zdrWCcTrdOn-7bDARE3udlEh4pTraB0RkrRi18Tj1c6jRXGD6q4Otb9d7QsF3Tvs7SOa4
+book: https://pngriver.com/wp-content/uploads/2018/04/Download-Civil-Engineering-Book-PNG.png
+car: https://pngimage.net/wp-content/uploads/2019/05/car-png-download-.png

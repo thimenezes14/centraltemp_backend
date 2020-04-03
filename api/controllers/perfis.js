@@ -1,10 +1,13 @@
+const fs = require('fs');
+const path = require('path');
+
 const sequelize = require('sequelize');
 const {validationResult} = require('express-validator');
 const jwt = require('jsonwebtoken');
 
 const Perfil = require('../models/Perfil');
-const Preferencia = require('../models/Preferencia');
 const Banho = require('../models/Banho');
+const BanhoHist = require('../collections/banho');
 
 const gerarHash = require('../helpers/hashing').hash;
 const verificarHash = require('../helpers/hashing').compare;
@@ -22,23 +25,18 @@ module.exports = {
     },
     async cadastrar(req, res) {
         const { nome, sexo, data_nasc, senha, avatar } = req.body;
+        console.log(req.body);
         const errors = validationResult(req);
         
         if (!errors.isEmpty()) {
             return res.status(422).json({ err: errors.array().map(item => { return item.msg }) });
         }
 
-       const t = await Perfil.sequelize.transaction({autocommit: false});
-
        try {
            let hash = await gerarHash(senha);
-           const perfil = await Perfil.create({nome, senha: hash, sexo, data_nasc, avatar}, {transaction: t});
-           await Preferencia.create({id_perfil: perfil.id_perfil}, {transaction: t})
-
-           await t.commit();
+           await Perfil.create({nome, senha: hash, sexo, data_nasc, avatar});
            return res.status(201).send();
        } catch (err) {
-           await t.rollback();
            return res.status(500).send(`Erro: ${err}`);
        }
 
@@ -57,7 +55,6 @@ module.exports = {
             const perfil = await Perfil.findOne({
                 attributes: ['id_perfil', 'nome', 'sexo', [sequelize.fn('to_char', sequelize.col('data_nasc'), 'dd/mm/YYYY'), 'data_nasc'], 'avatar'],
                 include: [
-                            {model: Preferencia, as: 'preferencia', attributes: ['temp_frio', 'temp_morno', 'temp_quente']},
                             {model: Banho, as: 'banho_ativo', attributes: ['id_banho', 'temp_escolhida']}
                          ],
                 where: { id_perfil: id }
@@ -130,7 +127,7 @@ module.exports = {
                 .catch(err => { return res.status(500).send(`Erro: ${err}`) })
 
     },
-    excluir(req, res) {
+    async excluir(req, res) {
         const { id } = req.params;
         const { token } = res.locals;
 
@@ -140,8 +137,25 @@ module.exports = {
         if (id !== token.id)
             return res.status(403).send("O ID informado difere do informado no token. ");
 
-        Perfil.destroy({ where: { id_perfil: id } })
-            .then(() => { return res.status(202).send() })
-            .catch(err => { return res.status(500).send(`Erro: ${err}`) })
+        const t = await Perfil.sequelize.transaction({autocommit: false});
+
+        try {
+            await Perfil.destroy({ where: { id_perfil: id } }, {transaction: t});
+            await BanhoHist.deleteMany({id_perfil: id});
+            await t.commit();
+            return res.status(200).send();
+        } catch (err) {
+            await t.rollback();
+            return res.status(500).send(`Erro: ${err}`)
+        }
+    },
+    async listarImagensParaPerfil(req, res) {
+        try {
+            const files = await fs.readdirSync(path.resolve(__dirname, '..', 'avatar'));
+            const images = await files.filter(image => RegExp(/([a-zA-Z0-9\s_\\.\-\(\):])+(.png|.jpg|.jpeg)$/).test(image));
+            return res.status(200).json(images);
+        } catch (err) {
+            return res.status(500).send(err);
+        }
     }
 }
