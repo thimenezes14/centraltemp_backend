@@ -2,8 +2,10 @@ const { validationResult } = require('express-validator');
 const Banho = require('../models/Banho');
 const BanhoHist = require('../collections/banho');
 const chuveiroAPI = require('../config/requestChuveiroESP');
+const moment = require('moment');
 
-const calcularPreferencias = require('../helpers/calcularTemperaturaRecomendada');
+const recomendar = require('../helpers/calcularTemperaturaRecomendada').recomendar;
+const classificar = require('../helpers/calcularTemperaturaRecomendada').classificar;
 
 module.exports = {
 
@@ -28,8 +30,19 @@ module.exports = {
                 return res.status(401).send(`Você não tem autorização para esta ação. `);
 
             await BanhoHist.find({id_perfil})
-                .then(docs => {
-                    res.status(200).json(docs);
+                .then(async docs => {
+                    const dados_cl = await classificar(docs);
+                    const historico = docs.map((d, index) => {
+                        return {
+                            temp_ambiente: d.temp_ambiente,
+                            temp_utilizada: d.temp_final,
+                            duracao_seg: d.duracao_seg,
+                            classificacao: dados_cl[index].classificacao,
+                            dia: moment(d.data_hora_insercao).format('YYYY-MM-DD'),
+                            hora: moment(d.data_hora_insercao).format('HH:mm:ss'),
+                        }
+                    });
+                    res.status(200).json(historico);
                 })
                 .catch(err => {return res.status(500).send(`Erro: ${err}`)})
         } catch (err) {
@@ -101,7 +114,9 @@ module.exports = {
         try {
             const sensor = (await chuveiroAPI.get('/sensor')).data;
             const banhos = Array(await BanhoHist.find({id_perfil: token.id}))[0];
-            const recomendacoes = await calcularPreferencias(banhos, sensor.temperatura);
+            
+            const dadosBanho = banhos.map(banho => {return {temp_ambiente: banho.temp_ambiente, temp_final: banho.temp_final}})
+            const recomendacoes = await recomendar(dadosBanho, sensor.temperatura);
             return res.status(200).json(recomendacoes);
         } catch (err) {
             return res.status(500).send(`Não foi possível recomendar temperatura para banho. Erro: ${err}`);
@@ -109,7 +124,7 @@ module.exports = {
     },
     async finalizar(req, res) {
         return res.status(200).send("Banho finalizado! ");
-    },
+    },                      
     async ligarChuveiroManual(req, res) {
         const {temperatura} = req.body;
         try {
