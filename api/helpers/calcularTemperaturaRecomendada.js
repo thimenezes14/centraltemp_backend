@@ -129,6 +129,7 @@ module.exports.recomendar = async (dados, temp_ambiente) => {
     }
  
     const mlr = await new MLR(x, y, { intercept: true });
+    console.log(mlr.toJSON());
     
     let temperatura_recomendada = await Math.round(mlr.predict([temperatura, Number(fat_var_rec.fator)]));
     

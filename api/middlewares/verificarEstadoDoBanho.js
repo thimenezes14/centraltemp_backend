@@ -2,18 +2,6 @@ const chuveiroAPI = require('../config/requestChuveiroESP');
 const Banho = require('../models/Banho');
 const BanhoHist = require('../collections/banho');
 
-function pad(num) {
-    return ("0" + num).slice(-2);
-}
-
-function converteParaHoraMinutoSegundo(segundos) {
-    let minutos = Math.floor(segundos / 60);
-    segundos = segundos % 60;
-    let horas = Math.floor(minutos / 60)
-    minutos = minutos % 60;
-    return `${pad(horas)}:${pad(minutos)}:${pad(segundos)}`;
-}
-
 module.exports = async (req, res, next) => {
     try {
         await chuveiroAPI.get('/chuveiro')

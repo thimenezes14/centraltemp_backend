@@ -29,7 +29,7 @@ module.exports = {
             if(id_perfil !== token.id)
                 return res.status(401).send(`Você não tem autorização para esta ação. `);
 
-            await BanhoHist.find({id_perfil})
+            await BanhoHist.find({id_perfil}, null, {sort: {data_hora_insercao: -1}})
                 .then(async docs => {
                     const dados_cl = await classificar(docs);
                     const historico = docs.map((d, index) => {
@@ -38,7 +38,7 @@ module.exports = {
                             temp_utilizada: d.temp_final,
                             duracao_seg: d.duracao_seg,
                             classificacao: dados_cl[index].classificacao,
-                            dia: moment(d.data_hora_insercao).format('YYYY-MM-DD'),
+                            dia: moment(d.data_hora_insercao).format('DD/MM/YYYY'),
                             hora: moment(d.data_hora_insercao).format('HH:mm:ss'),
                         }
                     });

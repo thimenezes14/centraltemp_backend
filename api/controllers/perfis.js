@@ -78,6 +78,10 @@ module.exports = {
             })
                 .then(async perfil => {
 
+                    if(!perfil) {
+                        return res.status(404).send("Este usuário foi excluído anteriormente e não pode ser usado. ");
+                    }
+
                     await verificarHash(senha, perfil.senha, async (err, isMatch) => {
                         if (err || !isMatch)
                             return res.status(401).send("ID e/ou Senha inválidos. ");
