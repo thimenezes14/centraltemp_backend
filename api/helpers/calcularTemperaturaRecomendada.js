@@ -5,6 +5,9 @@ const SENSOR_TEMPERATURA_FAIXA = {min: 0, max: 50};
 const PONTO_MEDIO = {menos_um: 40, zero: 37, mais_um: 34};
 const MIN_BANHOS = 10;
 
+const CLASSIFICACAO_IDEAL = 1, CLASSIFICACAO_BOM = 2;
+const MAX_DURACAO_IDEAL = 300, MAX_DURACAO_TOLERAVEL = 600;
+
 function obterFatorDeVariacao(temperatura_ambiente) {
 
     const fator_de_variacao = [
@@ -59,7 +62,8 @@ module.exports.classificar = async dados => {
 
     let historico = await dados.map(dado => {
         const {fator, limites} = obterFatorDeVariacao(dado.temp_ambiente);
-        let x; 
+        let x;
+        let classificacao_duracao_banho; 
         switch (fator) {
             case '-1':
                 x = PONTO_MEDIO.menos_um;
@@ -80,13 +84,22 @@ module.exports.classificar = async dados => {
         let d = Math.abs(y - x);
 
         T = Math.floor(d / 3) + 1;
+
+        if(dado.duracao_seg <= MAX_DURACAO_IDEAL) {
+            classificacao_duracao_banho = 1;
+        } else if(dado.duracao_seg <= MAX_DURACAO_TOLERAVEL) {
+            classificacao_duracao_banho = 2;
+        } else {
+            classificacao_duracao_banho = 3;
+        }
         
         return {
             temp_ambiente: dado.temp_ambiente,
             temp_final: y,
             fator,
             limites,
-            classificacao: T
+            classificacao_temperatura: T,
+            classificacao_duracao: classificacao_duracao_banho
         }
     });
     
@@ -117,7 +130,7 @@ module.exports.recomendar = async (dados, temp_ambiente) => {
 
     let y = [[PONTO_MEDIO.menos_um], [PONTO_MEDIO.zero], [PONTO_MEDIO.mais_um]];
     
-    const filtro = historico.filter(h => (h.classificacao === 1 || h.classificacao === 2));
+    const filtro = historico.filter(h => (h.classificacao_temperatura === CLASSIFICACAO_IDEAL || h.classificacao_temperatura === CLASSIFICACAO_BOM));
 
     if(filtro.filter(f => f.fator === fat_var_rec.fator).length >= MIN_BANHOS) {
 
@@ -129,7 +142,7 @@ module.exports.recomendar = async (dados, temp_ambiente) => {
     }
  
     const mlr = await new MLR(x, y, { intercept: true });
-    console.log(mlr.toJSON());
+    //console.log(mlr.toJSON());
     
     let temperatura_recomendada = await Math.round(mlr.predict([temperatura, Number(fat_var_rec.fator)]));
     

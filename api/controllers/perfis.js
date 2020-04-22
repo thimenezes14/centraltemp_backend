@@ -153,6 +153,24 @@ module.exports = {
             return res.status(500).send(`Erro: ${err}`)
         }
     },
+    async excluirHistorico(req, res) {
+        const { id } = req.params;
+        const { token } = res.locals;
+
+        if (!id)
+            return res.status(400).send("ID não informado para exclusão. ");
+
+        if (id !== token.id)
+            return res.status(403).send("O ID informado difere do informado no token. ");
+
+        await BanhoHist.deleteMany({id_perfil: id})
+            .then(() => {
+                return res.status(200).send();
+            })
+            .catch(err => {
+                return res.status(500).send(err);
+            })
+    },
     async listarImagensParaPerfil(req, res) {
         try {
             const files = await fs.readdirSync(path.resolve(__dirname, '..', 'avatar'));

@@ -37,7 +37,8 @@ module.exports = {
                             temp_ambiente: d.temp_ambiente,
                             temp_utilizada: d.temp_final,
                             duracao_seg: d.duracao_seg,
-                            classificacao: dados_cl[index].classificacao,
+                            classificacao_temperatura: dados_cl[index].classificacao_temperatura,
+                            classificacao_duracao: dados_cl[index].classificacao_duracao,
                             dia: moment(d.data_hora_insercao).format('DD/MM/YYYY'),
                             hora: moment(d.data_hora_insercao).format('HH:mm:ss'),
                         }
@@ -115,8 +116,7 @@ module.exports = {
             const sensor = (await chuveiroAPI.get('/sensor')).data;
             const banhos = Array(await BanhoHist.find({id_perfil: token.id}))[0];
             
-            const dadosBanho = banhos.map(banho => {return {temp_ambiente: banho.temp_ambiente, temp_final: banho.temp_final}})
-            const recomendacoes = await recomendar(dadosBanho, sensor.temperatura);
+            const recomendacoes = await recomendar(banhos, sensor.temperatura);
             return res.status(200).json(recomendacoes);
         } catch (err) {
             return res.status(500).send(`Não foi possível recomendar temperatura para banho. Erro: ${err}`);

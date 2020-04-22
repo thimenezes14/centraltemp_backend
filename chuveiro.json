@@ -1,11 +1,11 @@
 {
   "chuveiro": {
-    "id_banho": "7b7f920e-b044-4910-9ce3-e9e0bde9e552",
-    "id_perfil": "51765d07-40c0-47b2-b1a0-edb2da24dd5c",
-    "temp_escolhida": 37,
+    "id_banho": "c37307c1-4fd5-4667-bb2f-52a113df9d46",
+    "id_perfil": "32b271ac-85bc-44a6-8c5b-1fd0d8b028a6",
+    "temp_escolhida": 40,
     "temp_ambiente": 24,
-    "temp_final": 37,
-    "duracao_seg": 314,
+    "temp_final": 40,
+    "duracao_seg": 356,
     "ligado": false
   },
   "sensor": {
