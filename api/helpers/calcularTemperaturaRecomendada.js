@@ -1,6 +1,7 @@
 const MLR = require('ml-regression-multivariate-linear');
 const genstats = require('genstats');
 
+const fator_de_variacao = require('./fatordevariacao');
 const SENSOR_TEMPERATURA_FAIXA = {min: 0, max: 50};
 const PONTO_MEDIO = {menos_um: 40, zero: 37, mais_um: 34};
 const MIN_BANHOS = 10;
@@ -9,25 +10,6 @@ const CLASSIFICACAO_IDEAL = 1, CLASSIFICACAO_BOM = 2;
 const MAX_DURACAO_IDEAL = 300, MAX_DURACAO_TOLERAVEL = 600;
 
 function obterFatorDeVariacao(temperatura_ambiente) {
-
-    const fator_de_variacao = [
-        {
-            fator: '-1',
-            intervalo: { min: SENSOR_TEMPERATURA_FAIXA.min, max: 25 },
-            limites: {min: 36, max: 44}
-        },
-        {
-            fator: '0',
-            intervalo: { min: 26, max: 34 },
-            limites: {min: 33, max: 41}
-        },
-        {
-            fator: '1',
-            intervalo: { min: 35, max: SENSOR_TEMPERATURA_FAIXA.max },
-            limites: {min: 30, max: 38}
-        }
-    ];
-
     if(!isNaN(temperatura_ambiente))
         return fator_de_variacao.filter(f => (temperatura_ambiente >= f.intervalo.min) && (temperatura_ambiente <= f.intervalo.max))[0];
     else {
@@ -142,9 +124,10 @@ module.exports.recomendar = async (dados, temp_ambiente) => {
     }
  
     const mlr = await new MLR(x, y, { intercept: true });
-    //console.log(mlr.toJSON());
+    console.log(mlr.toJSON());
     
     let temperatura_recomendada = await Math.round(mlr.predict([temperatura, Number(fat_var_rec.fator)]));
+    console.log(temperatura_recomendada);
     
     if(temperatura_recomendada > fat_var_rec.limites.max) {
         temperatura_recomendada = fat_var_rec.limites.max;
