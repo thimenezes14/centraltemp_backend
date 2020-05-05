@@ -12,6 +12,10 @@ class Perfil extends Model {
             nome: DataTypes.STRING,
             sexo: DataTypes.CHAR,
             data_nasc: DataTypes.DATEONLY,
+            sec_mode: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: true
+            },
             avatar: DataTypes.STRING
         }, {
             sequelize,

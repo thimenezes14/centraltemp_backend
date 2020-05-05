@@ -27,7 +27,7 @@ module.exports = async (req, res, next) => {
                                 const t = await Banho.sequelize.transaction({ autocommit: false });
 
                                 try {
-                                    await Banho.destroy({ where: { id_banho } }, { transaction: t })
+                                    await Banho.destroy({ where: {} }, { transaction: t })
                                         .then(async () => {
                                             await new BanhoHist(histData).save()
                                                 .then(() => {

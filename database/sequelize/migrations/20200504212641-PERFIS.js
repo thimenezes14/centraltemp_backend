@@ -24,6 +24,10 @@ module.exports = {
           type: Sequelize.DATEONLY,
           allowNull: false,
         },
+        sec_mode: {
+          type: Sequelize.BOOLEAN(),
+          allowNull: false
+        },
         avatar: {
           type: Sequelize.STRING,
           allowNull: false,

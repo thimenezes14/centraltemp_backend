@@ -91,9 +91,22 @@ module.exports = {
             try {
                 const banho = await Banho.create({ id_perfil, temp_escolhida }, { transaction: t });
                 const sensor = (await chuveiroAPI.get('/sensor')).data;
+                const banhos = Array(await BanhoHist.find({id_perfil: token.id}))[0];
 
-                //Adicionar tempo de duração, temperatura ambiente e temperatura final apenas como exemplo. Remover campos quando ESP for integrada.
-                await chuveiroAPI.post('/chuveiro', { id_banho: banho.id_banho, id_perfil, temp_escolhida, temp_ambiente: sensor.temperatura, temp_final: temp_escolhida, duracao_seg: 300, ligado: true })
+                const chuveiroInfo = {
+                    id_banho: banho.id_banho,
+                    id_perfil,
+                    temp_escolhida,
+                    sec_mode: token.sec_mode === true ? true : false,
+                    limites: (await recomendar(banhos, sensor.temperatura)).limites,
+
+                    temp_ambiente: sensor.temperatura, //Exemplo. Remover na integração final
+                    temp_final: temp_escolhida, //Exemplo. Remover na integração final
+                    duracao_seg: Math.ceil(Math.random() * (900 - 300) + 300), //Exemplo. Remover na integração final
+                    ligado: true, //Exemplo. Remover na integração final
+                }
+
+                await chuveiroAPI.post('/chuveiro', chuveiroInfo)
                     .then(async () => {
                         await t.commit();
                         res.status(201).send();
@@ -115,7 +128,6 @@ module.exports = {
         try {
             const sensor = (await chuveiroAPI.get('/sensor')).data;
             const banhos = Array(await BanhoHist.find({id_perfil: token.id}))[0];
-            
             const recomendacoes = await recomendar(banhos, sensor.temperatura);
             return res.status(200).json(recomendacoes);
         } catch (err) {

@@ -53,7 +53,7 @@ module.exports = {
 
         try {
             const perfil = await Perfil.findOne({
-                attributes: ['id_perfil', 'nome', 'sexo', [sequelize.fn('to_char', sequelize.col('data_nasc'), 'dd/mm/YYYY'), 'data_nasc'], 'avatar'],
+                attributes: ['id_perfil', 'nome', 'sexo', [sequelize.fn('to_char', sequelize.col('data_nasc'), 'dd/mm/YYYY'), 'data_nasc'], 'avatar', 'sec_mode'],
                 include: [
                             {model: Banho, as: 'banho_ativo', attributes: ['id_banho', 'temp_escolhida']}
                          ],
@@ -73,7 +73,7 @@ module.exports = {
             return res.status(400).send("ID e/ou Senha não fornecidos. ");
 
             await Perfil.findOne({
-                attributes: ['id_perfil', 'senha'],
+                attributes: ['id_perfil', 'senha', 'sec_mode'],
                 where: { id_perfil: id }
             })
                 .then(async perfil => {
@@ -87,7 +87,8 @@ module.exports = {
                             return res.status(401).send("ID e/ou Senha inválidos. ");
     
                         const token = await jwt.sign({
-                            id: perfil.id_perfil
+                            id: perfil.id_perfil,
+                            sec_mode: perfil.sec_mode
                         },
                             process.env.JWT_SECRET,
                             {
@@ -101,7 +102,7 @@ module.exports = {
                 .catch(err => { return res.status(500).send(`Erro: ${err}`) })
     },
     async atualizar(req, res) {
-        const { nome, senha, avatar } = req.body;
+        const { nome, senha, avatar, sec_mode } = req.body;
         const { id } = req.params;
         const { token } = res.locals;
 
@@ -124,6 +125,10 @@ module.exports = {
 
         if(avatar) {
             campos.avatar = avatar;
+        }
+
+        if(typeof(sec_mode) !== 'undefined') {
+            campos.sec_mode = sec_mode;
         }
 
         await Perfil.update(campos, { where: { id_perfil: id } })
