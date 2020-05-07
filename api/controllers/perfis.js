@@ -25,7 +25,6 @@ module.exports = {
     },
     async cadastrar(req, res) {
         const { nome, sexo, data_nasc, senha, avatar } = req.body;
-        console.log(req.body);
         const errors = validationResult(req);
         
         if (!errors.isEmpty()) {

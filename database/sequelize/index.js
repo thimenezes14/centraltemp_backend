@@ -10,6 +10,5 @@ Banho.init(conn);
 
 Perfil.associate(conn.models);
 Banho.associate(conn.models);
-console.log("Sequelize Conectado. ");
 
 module.exports = conn;
