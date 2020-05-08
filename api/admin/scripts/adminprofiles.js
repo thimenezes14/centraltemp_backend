@@ -1,10 +1,10 @@
 const readlineSync = require("readline-sync");
 const bcrypt = require('bcrypt-nodejs');
 const sequelize = require("sequelize");
-require('../../database/sequelize');
-require('../../database/mongoose');
-const Perfil = require('../models/Perfil');
-const BanhoHist = require('../collections/banho');
+require('../../../database/sequelize');
+require('../../../database/mongoose');
+const Perfil = require('../../models/Perfil');
+const BanhoHist = require('../../collections/banho');
 require('dotenv/config');
 
 function compararHash(senha, senhaV) {

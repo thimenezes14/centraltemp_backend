@@ -1,10 +1,11 @@
 const readlineSync = require("readline-sync");
 const bcrypt = require('bcrypt-nodejs');
-const Perfil = require('../models/Perfil');
-const BanhoHist = require('../collections/banho');
+const Admin = require('../../models/Admin');
+const Perfil = require('../../models/Perfil');
+const BanhoHist = require('../../collections/banho');
 require('dotenv/config');
-require('../../database/sequelize');
-require('../../database/mongoose');
+require('../../../database/sequelize');
+require('../../../database/mongoose');
 
 function compararHash(senha, senhaV) {
     return bcrypt.compareSync(senha, senhaV);
@@ -43,7 +44,7 @@ async function reset() {
     }
 }
 
-module.exports = () => {
+module.exports = async () => {
     try {
         console.clear();
         console.log("CENTRALTEMP REBOOT");
@@ -54,10 +55,11 @@ module.exports = () => {
         if (confirmacao) {
             let senha = readlineSync.question("Digite a senha de admin: ", {
                 hideEchoBack: true,
-                encoding: 'utf8'
+                caseSensitive: true
             });
 
-            if (!compararHash(senha, process.env.ADMIN_PASS)) {
+            const admin = await Admin.findAll();
+            if (!compararHash(senha, admin[0].senha)) {
                 console.log('\x1b[31m%s\x1b[0m', "Senha incorreta. ");
                 process.exit(0);
             }
