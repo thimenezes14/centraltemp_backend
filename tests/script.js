@@ -1,7 +1,9 @@
 const MLR = require('ml-regression-multivariate-linear');
 const genstats = require('genstats');
+const csvToJson = require('csv-file-to-json');
+const path = require('path');
 
-const fator_de_variacao = require('./fatordevariacao');
+const fator_de_variacao = require('../api/helpers/fatordevariacao');
 const SENSOR_TEMPERATURA_FAIXA = {min: 0, max: 50};
 const PONTO_MEDIO = {menos_um: 40, zero: 37, mais_um: 34};
 const MIN_BANHOS = 10;
@@ -36,7 +38,7 @@ function normalizarTemperatura(temperatura_ambiente) {
     return temperatura;
 }
 
-module.exports.classificar = async dados => {
+const classificar = async dados => {
   
     if (!Array.isArray(dados)) {
         throw new Error("Dados informados não são array. ");
@@ -45,7 +47,7 @@ module.exports.classificar = async dados => {
     let historico = await dados.map(dado => {
         const {fator, limites} = obterFatorDeVariacao(dado.temp_ambiente);
         let x;
-        let classificacao_duracao_banho; 
+ 
         switch (fator) {
             case '-1':
                 x = PONTO_MEDIO.menos_um;
@@ -66,22 +68,13 @@ module.exports.classificar = async dados => {
         let d = Math.abs(y - x);
 
         T = Math.floor(d / 3) + 1;
-
-        if(dado.duracao_seg <= MAX_DURACAO_IDEAL) {
-            classificacao_duracao_banho = 1;
-        } else if(dado.duracao_seg <= MAX_DURACAO_TOLERAVEL) {
-            classificacao_duracao_banho = 2;
-        } else {
-            classificacao_duracao_banho = 3;
-        }
-        
+      
         return {
             temp_ambiente: dado.temp_ambiente,
             temp_final: y,
             fator,
             limites,
-            classificacao_temperatura: T,
-            classificacao_duracao: classificacao_duracao_banho
+            classificacao_temperatura: T
         }
     });
     
@@ -89,7 +82,7 @@ module.exports.classificar = async dados => {
 
 }
 
-module.exports.recomendar = async (dados, temp_ambiente) => {
+const recomendar = async (dados, temp_ambiente) => {
 
     if (!Array.isArray(dados)) {
         throw new Error("Dados informados não são array. ");
@@ -143,3 +136,24 @@ module.exports.recomendar = async (dados, temp_ambiente) => {
     return resultado;
 
 }
+
+const temperatura_ambiente_simulada = Math.floor(Math.random() * 25);
+const jsonFileFromCSV = csvToJson({ filePath: path.resolve("./tests/dados_thiago.csv"), hasHeader: true, separator: ';' });
+
+async function normalizarDados(dados) {
+    const dadosNormalizados = await dados.map(dado => {
+        return {
+            temp_ambiente: Number(dado.temp_ambiente),
+            temp_final: Number(dado.temp_final)
+        }
+    })
+    return dadosNormalizados;
+}
+
+async function main() {
+    const dados = await normalizarDados(jsonFileFromCSV);
+    console.log(temperatura_ambiente_simulada);
+    console.log(await recomendar(dados, temperatura_ambiente_simulada));
+}
+
+main();
