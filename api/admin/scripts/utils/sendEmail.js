@@ -25,7 +25,7 @@ module.exports = async (senhaGerada, emailDestino, modo) => {
         switch (modo) {
             case 'password':
                 assunto = "Solicitação de nova senha";
-                mensagemHTML =  "<p>Uma solicitação de nova senha para o administrador foi efetuada. Anote a senha abaixo:</p><p style='font-family: Courier, monospace; text-align: center'><strong>" + senhaGerada + "</strong></p><h6>Atenção: esta deve ser uma senha TEMPORÁRIA e deve ser trocada assim que recebida!</h6>"
+                mensagemHTML =  "<p>Uma solicitação de nova senha para o administrador foi efetuada. Anote o código abaixo:</p><p style='font-family: Courier, monospace; text-align: center'><strong>" + senhaGerada + "</strong></p><h6>Atenção: não compartilhe este código com ninguém!</h6>"
                 break;
             case 'confirmation':
                 assunto = "Confirmação de cadastro";

@@ -114,6 +114,7 @@ const recomendar = async (dados, temp_ambiente) => {
     }
 
     const mlr = await new MLR(x, y, { intercept: true });
+    console.log(mlr.toJSON());
     let temperatura_recomendada = await Math.round(mlr.predict([temperatura]));
     
     if(temperatura_recomendada > fat_var_rec.limites.max) {
@@ -138,7 +139,7 @@ const recomendar = async (dados, temp_ambiente) => {
 }
 
 const temperatura_ambiente_simulada = Math.floor(Math.random() * 25);
-const jsonFileFromCSV = csvToJson({ filePath: path.resolve("./tests/dados_thiago.csv"), hasHeader: true, separator: ';' });
+const jsonFileFromCSV = csvToJson({ filePath: path.resolve("./tests/dados.csv"), hasHeader: true, separator: ';' });
 
 async function normalizarDados(dados) {
     const dadosNormalizados = await dados.map(dado => {

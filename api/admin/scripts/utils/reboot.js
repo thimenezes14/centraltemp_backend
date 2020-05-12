@@ -1,11 +1,12 @@
 const readlineSync = require("readline-sync");
 const bcrypt = require('bcrypt-nodejs');
-const Admin = require('../../models/Admin');
-const Perfil = require('../../models/Perfil');
-const BanhoHist = require('../../collections/banho');
+const Admin = require('../../../models/Admin');
+const Perfil = require('../../../models/Perfil');
+const BanhoHist = require('../../../collections/banho');
 require('dotenv/config');
-require('../../../database/sequelize');
-require('../../../database/mongoose');
+require('../../../../database/sequelize');
+require('../../../../database/mongoose');
+const adminDAO = require('../database/adminDAO');
 
 function compararHash(senha, senhaV) {
     return bcrypt.compareSync(senha, senhaV);
@@ -14,9 +15,8 @@ function compararHash(senha, senhaV) {
 async function excluirHistoricos() {
     console.log('\x1b[33m%s\x1b[0m', "Excluindo históricos...");
     try {
-        await BanhoHist.deleteMany()
-            .then(res => console.log(res.deletedCount + " registro(s) de histórico apagados. "));
-        console.log('\x1b[36m%s\x1b[0m', "Exclusão de históricos concluída. ");
+        let registrosHistorico = await BanhoHist.deleteMany();
+        console.log('\x1b[36m%s\x1b[0m', "Exclusão de históricos concluída. " + registrosHistorico.deletedCount +" registro(s) apagado(s). ");
     } catch (err) {
         console.log("Erro ao excluir histórico. ");
         throw new Error("Detalhes do erro: " + err);
@@ -26,9 +26,8 @@ async function excluirHistoricos() {
 async function excluirPerfis() {
     console.log('\x1b[33m%s\x1b[0m', "Excluindo perfis...");
     try {
-        await Perfil.destroy({ where: {} })
-            .then(res => console.log(res + " perfil(is) apagado(s). "));
-        console.log('\x1b[36m%s\x1b[0m', "Exclusão de perfis concluída. ");
+        let perfisApagados = await Perfil.destroy({ where: {} });
+        console.log('\x1b[36m%s\x1b[0m', "Exclusão de perfis concluída. " + perfisApagados + " perfil(is) apagado(s). ");
     } catch (err) {
         console.log("Erro ao excluir perfis. ");
         throw new Error("Detalhes do erro: " + err);
@@ -52,6 +51,13 @@ module.exports = async () => {
 
         let confirmacao = readlineSync.keyInYNStrict("Deseja mesmo redefinir todo o sistema? Esta acao nao podera ser desfeita! ", { guide: true });
 
+        let hasAdmin = await adminDAO.verificarAdmin()
+        
+        if(!hasAdmin) {
+            console.log('\x1b[33m%s\x1b[0m', "Não existem administradores para executar esta ação. ");
+            return;
+        }
+
         if (confirmacao) {
             let senha = readlineSync.question("Digite a senha de admin: ", {
                 hideEchoBack: true,
@@ -65,10 +71,10 @@ module.exports = async () => {
             }
 
             console.log('\x1b[33m%s\x1b[0m', "Iniciando reboot...");
-            reset()
-                .then(() => process.exit(0))
+            await reset();
+            console.log('\x1b[36m%s\x1b[0m', "Reboot finalizado. ");
         } else {
-            process.exit(0);
+            console.log('\x1b[33m%s\x1b[0m', "Operação cancelada. ");
         }
     } catch (err) {
         console.log('\x1b[31m%s\x1b[0m', "Ocorreu um erro. " + err);
