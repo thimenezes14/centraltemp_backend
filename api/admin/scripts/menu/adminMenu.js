@@ -1,6 +1,7 @@
-const promptFunctions = require('../adminPrompt');
+const promptFunctions = require('../prompt/adminPrompt');
 const readlineSync = require('readline-sync');
-const reboot = require('../reboot');
+const perfilMenu = require('./perfilMenu');
+const reboot = require('../utils/reboot');
 const DANGER = '\x1b[31m%s\x1b[0m', WARNING = '\x1b[33m%s\x1b[0m', SUCCESS = '\x1b[36m%s\x1b[0m';
 
 module.exports = async () => {
@@ -11,7 +12,7 @@ module.exports = async () => {
     let opcao;
 
     do {
-        const opcoesDescricao = ['CRIAR NOVO ADMINISTRADOR', 'EXCLUIR ADMINISTRADOR', 'ALTERAR SENHA', 'GERENCIAR PERFIS', 'REBOOT'];
+        const opcoesDescricao = ['CRIAR ADMINISTRADOR', 'EXCLUIR ADMINISTRADOR', 'ALTERAR SENHA', 'GERENCIAR PERFIS', 'REBOOT'];
         opcao = readlineSync.keyInSelect(opcoesDescricao, "Selecione uma opcao abaixo: ", { cancel: 'CANCELAR' });
  
         switch (opcao) {
@@ -25,7 +26,7 @@ module.exports = async () => {
                 await promptFunctions.trocarSenha();
                 break;
             case 3:
-                console.log("opção 3");
+                await perfilMenu();
                 break;
             case 4:
                 await reboot();

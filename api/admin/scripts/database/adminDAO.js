@@ -13,6 +13,12 @@ function compararHash(senha, senhaV) {
 }
 
 async function confirmar(senha) {
+    let hasAdmin = await verificarSeHaAdmin();
+    if(!hasAdmin) {
+        console.log(DANGER, "Não existe nenhum administrador para realizar esta operação. ");
+        return;
+    }
+
     try {
         const admin = await Admin.findAll();
         return compararHash(senha, admin[0].senha);

@@ -3,6 +3,7 @@ const path = require('path');
 
 const sequelize = require('sequelize');
 const {validationResult} = require('express-validator');
+const moment = require('moment');
 const jwt = require('jsonwebtoken');
 
 const Perfil = require('../models/Perfil');
@@ -11,6 +12,8 @@ const BanhoHist = require('../collections/banho');
 
 const gerarHash = require('../helpers/hashing').hash;
 const verificarHash = require('../helpers/hashing').compare;
+
+const MAX_AGE = 120;
 
 module.exports = {
     async listar(req, res) {
@@ -29,6 +32,14 @@ module.exports = {
         
         if (!errors.isEmpty()) {
             return res.status(422).json({ err: errors.array().map(item => { return item.msg }) });
+        }
+
+        if(moment().diff(moment(data_nasc, 'YYYY-MM-DD'), 'years') > MAX_AGE) {
+            return res.status(400).send("Data de nascimento maior que a máxima permitida. ");
+        }
+
+        if(moment().isSameOrBefore(moment(data_nasc, 'YYYY-MM-DD'))) {
+            return res.status(400).send("Data de nascimento menor que a permitida. ");
         }
 
        try {
