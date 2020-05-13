@@ -3,10 +3,12 @@ const bcrypt = require('bcrypt-nodejs');
 const Admin = require('../../../models/Admin');
 const Perfil = require('../../../models/Perfil');
 const BanhoHist = require('../../../collections/banho');
+const adminDAO = require('../database/adminDAO');
 require('dotenv/config');
 require('../../../../database/sequelize');
 require('../../../../database/mongoose');
-const adminDAO = require('../database/adminDAO');
+
+const reg = require('../../../../logs/log');
 
 function compararHash(senha, senhaV) {
     return bcrypt.compareSync(senha, senhaV);
@@ -38,6 +40,7 @@ async function reset() {
     try {
         await excluirPerfis();
         await excluirHistoricos();
+        await reg.reboot();
     } catch (error) {
         console.log(error);
     }

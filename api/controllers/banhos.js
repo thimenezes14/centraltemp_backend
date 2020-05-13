@@ -6,6 +6,7 @@ const moment = require('moment');
 
 const recomendar = require('../helpers/calcularTemperaturaRecomendada').recomendar;
 const classificar = require('../helpers/calcularTemperaturaRecomendada').classificar;
+const reg = require('../../logs/log');
 
 module.exports = {
 
@@ -109,6 +110,7 @@ module.exports = {
                 await chuveiroAPI.post('/chuveiro', chuveiroInfo)
                     .then(async () => {
                         await t.commit();
+                        await reg.registrarAcaoBanho('registrar', id_perfil);
                         res.status(201).send();
                     })
                     .catch(async err => {
@@ -140,7 +142,8 @@ module.exports = {
     async ligarChuveiroManual(req, res) {
         const {temperatura} = req.body;
         try {
-            await chuveiroAPI.post('/chuveiro', { temp_escolhida: temperatura, temp_final: temperatura, ligado: true })
+            await chuveiroAPI.post('/chuveiro', { temp_escolhida: temperatura, temp_final: temperatura, ligado: true });
+            await reg.registrarAcaoBanho('registrar', null);
             res.status(201).json({temperatura, ligado: true});
         } catch (err) {
             return res.status(500).send(`Erro: ${err}`)

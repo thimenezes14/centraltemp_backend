@@ -1,6 +1,7 @@
 const chuveiroAPI = require('../config/requestChuveiroESP');
 const Banho = require('../models/Banho');
 const BanhoHist = require('../collections/banho');
+const reg = require('../../logs/log');
 
 module.exports = async (req, res, next) => {
     try {
@@ -30,8 +31,8 @@ module.exports = async (req, res, next) => {
                                     await Banho.destroy({ where: {} }, { transaction: t })
                                         .then(async () => {
                                             await new BanhoHist(histData).save()
-                                                .then(() => {
-                                                    console.log("Histórico criado. ");
+                                                .then(async () => {
+                                                    await reg.registrarAcaoBanho('salvar', id_perfil);
                                                     t.commit();
                                                     next();
                                                 })

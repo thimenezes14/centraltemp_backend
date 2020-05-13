@@ -100,7 +100,7 @@ module.exports.recomendar = async (dados, temp_ambiente) => {
     }
     
     const temperatura = normalizarTemperatura(temp_ambiente);
-    const historico = await classificar(dados);
+    const historico = await this.classificar(dados);
     const intervalos = obterFatorDeVariacao();
     const fat_var_rec = obterFatorDeVariacao(temperatura);
 

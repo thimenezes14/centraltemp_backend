@@ -12,6 +12,7 @@ const BanhoHist = require('../collections/banho');
 
 const gerarHash = require('../helpers/hashing').hash;
 const verificarHash = require('../helpers/hashing').compare;
+const reg = require('../../logs/log');
 
 const MAX_AGE = 120;
 
@@ -45,6 +46,7 @@ module.exports = {
        try {
            let hash = await gerarHash(senha);
            await Perfil.create({nome, senha: hash, sexo, data_nasc, avatar});
+           await reg.registrarAcaoPerfil('salvar', nome, false);
            return res.status(201).send();
        } catch (err) {
            return res.status(500).send(`Erro: ${err}`);
@@ -105,7 +107,8 @@ module.exports = {
                                 expiresIn: "1h"
                             }
                         );
-    
+
+                        await reg.registrarAcaoPerfil('login', perfil.id_perfil, false);
                         return res.status(200).json({token});
                     })
                 })
@@ -142,7 +145,10 @@ module.exports = {
         }
 
         await Perfil.update(campos, { where: { id_perfil: id } })
-                .then(() => { return res.status(200).send() })
+                .then(async () => { 
+                    await reg.registrarAcaoPerfil('alterar', id, false);
+                    return res.status(200).send(); 
+                })
                 .catch(err => { return res.status(500).send(`Erro: ${err}`) })
 
     },
@@ -162,6 +168,7 @@ module.exports = {
             await Perfil.destroy({ where: { id_perfil: id } }, {transaction: t});
             await BanhoHist.deleteMany({id_perfil: id});
             await t.commit();
+            await reg.registrarAcaoPerfil('excluir', id, false);
             return res.status(200).send();
         } catch (err) {
             await t.rollback();
@@ -179,7 +186,8 @@ module.exports = {
             return res.status(403).send("O ID informado difere do informado no token. ");
 
         await BanhoHist.deleteMany({id_perfil: id})
-            .then(() => {
+            .then(async () => {
+                await reg.registrarAcaoBanho('excluir', id, false);
                 return res.status(200).send();
             })
             .catch(err => {

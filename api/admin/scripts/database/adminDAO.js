@@ -1,4 +1,5 @@
 require('../../../../database/sequelize');
+const reg = require('../../../../logs/log');
 const Admin = require('../../../models/Admin');
 const bcrypt = require('bcrypt-nodejs');
 const DANGER = '\x1b[31m%s\x1b[0m', WARNING = '\x1b[33m%s\x1b[0m', SUCCESS = '\x1b[36m%s\x1b[0m';
@@ -67,6 +68,8 @@ module.exports.novo = async dados => {
 
         await Admin.create(admin);
         console.log(SUCCESS, "Um admin foi criado com sucesso! ");
+        await reg.registrarAcaoAdmin('salvar');
+        
     } catch (err) {
         console.log(DANGER, "Erro ao criar admin:  " + err);
         process.exit(1);
@@ -86,6 +89,7 @@ module.exports.excluir = async senha => {
         if(senhaOk) {
             await Admin.destroy({where:{}});
             console.log(SUCCESS, "Administrador excluído com sucesso. ");
+            await reg.registrarAcaoAdmin('excluir');
             return true;
         }
         console.log(DANGER, "Senha incorreta. ");
@@ -109,6 +113,7 @@ module.exports.trocarSenha = async novaSenha => {
     const admin = await Admin.findAll();
     await Admin.update({senha: await gerarHash(novaSenha)}, {where: {email: admin[0].email}});
     console.log(SUCCESS, "Senha alterada com sucesso! ");
+    await reg.registrarAcaoAdmin('senha');
     return true;
 }
 
