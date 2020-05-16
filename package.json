@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index",
+    "dev": "echo \"RODE ESTE COMANDO: json-server --host [IP] chuveiro.json -p [PORTA] --watch\" && nodemon index",
     "admin": "node api/admin/index.js"
   },
   "repository": {

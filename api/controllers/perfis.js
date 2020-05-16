@@ -1,9 +1,5 @@
-const fs = require('fs');
-const path = require('path');
-
 const sequelize = require('sequelize');
-const {validationResult} = require('express-validator');
-const moment = require('moment');
+const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 
 const Perfil = require('../models/Perfil');
@@ -12,9 +8,10 @@ const BanhoHist = require('../collections/banho');
 
 const gerarHash = require('../helpers/hashing').hash;
 const verificarHash = require('../helpers/hashing').compare;
+const verificarSelecaodeAvatar = require('../helpers/verificarSelecaodeAvatar');
+const verificarDatadeNascimento = require('../helpers/verificarDatadeNascimento');
 const reg = require('../../logs/log');
 
-const MAX_AGE = 120;
 
 module.exports = {
     async listar(req, res) {
@@ -24,33 +21,34 @@ module.exports = {
                 ['nome', 'ASC']
             ]
         })
-            .then(perfis => {return res.status(200).json(perfis)})
-            .catch(err => {return res.status(500).send(`Erro: ${err}`)})
+            .then(perfis => { return res.status(200).json(perfis) })
+            .catch(err => { return res.status(500).send(`Erro: ${err}`) })
     },
     async cadastrar(req, res) {
-        const { nome, sexo, data_nasc, senha, avatar } = req.body;
-        const errors = validationResult(req);
-        
-        if (!errors.isEmpty()) {
-            return res.status(422).json({ err: errors.array().map(item => { return item.msg }) });
-        }
+        try {
+            const { nome, sexo, data_nasc, senha, avatar } = req.body;
+            const errors = validationResult(req);
+         
+            if (!errors.isEmpty()) {
+                return res.status(422).send(errors.array().map(item => { return item.msg }));
+            }
 
-        if(moment().diff(moment(data_nasc, 'YYYY-MM-DD'), 'years') > MAX_AGE) {
-            return res.status(400).send("Data de nascimento maior que a máxima permitida. ");
-        }
+            if(!(await verificarDatadeNascimento(data_nasc))) {
+                return res.status(422).send("Data de nascimento inválida. ");
+            }
 
-        if(moment().isSameOrBefore(moment(data_nasc, 'YYYY-MM-DD'))) {
-            return res.status(400).send("Data de nascimento menor que a permitida. ");
-        }
+            if (!(await verificarSelecaodeAvatar(avatar))) {
+                return res.status(422).send("Nenhuma imagem válida foi selecionada. ");
+            }
 
-       try {
-           let hash = await gerarHash(senha);
-           await Perfil.create({nome, senha: hash, sexo, data_nasc, avatar});
-           await reg.registrarAcaoPerfil('salvar', nome, false);
-           return res.status(201).send();
-       } catch (err) {
-           return res.status(500).send(`Erro: ${err}`);
-       }
+            let hash = await gerarHash(senha);
+            await Perfil.create({ nome, senha: hash, sexo, data_nasc, avatar });
+            
+            await reg.registrarAcaoPerfil('salvar', nome, false);
+            return res.status(201).send();
+        } catch (err) {
+            return res.status(500).send(`Erro: ${err}`);
+        }
 
     },
     async detalhar(req, res) {
@@ -60,15 +58,15 @@ module.exports = {
         if (!id)
             return res.status(400).send("ID para detalhamento não fornecido. ");
 
-        if(id !== token.id)
-            return res.status(401).send("O ID informado difere do informado no token. ");
+        if (id !== token.id)
+            return res.status(403).send("O ID informado difere do informado no token. ");
 
         try {
             const perfil = await Perfil.findOne({
                 attributes: ['id_perfil', 'nome', 'sexo', [sequelize.fn('to_char', sequelize.col('data_nasc'), 'dd/mm/YYYY'), 'data_nasc'], 'avatar', 'sec_mode'],
                 include: [
-                            {model: Banho, as: 'banho_ativo', attributes: ['id_banho', 'temp_escolhida']}
-                         ],
+                    { model: Banho, as: 'banho_ativo', attributes: ['id_banho', 'temp_escolhida'] }
+                ],
                 where: { id_perfil: id }
             });
 
@@ -79,40 +77,40 @@ module.exports = {
 
     },
     async autenticar(req, res) {
-        const {id, senha} = req.body;
+        const { id, senha } = req.body;
 
-        if(!id || !senha)
+        if (!id || !senha)
             return res.status(400).send("ID e/ou Senha não fornecidos. ");
 
-            await Perfil.findOne({
-                attributes: ['id_perfil', 'senha', 'sec_mode'],
-                where: { id_perfil: id }
-            })
-                .then(async perfil => {
+        await Perfil.findOne({
+            attributes: ['id_perfil', 'senha', 'sec_mode'],
+            where: { id_perfil: id }
+        })
+            .then(async perfil => {
 
-                    if(!perfil) {
-                        return res.status(404).send("Este usuário foi excluído anteriormente e não pode ser usado. ");
-                    }
+                if (!perfil) {
+                    return res.status(404).send("Este usuário foi excluído anteriormente e não pode ser usado. ");
+                }
 
-                    await verificarHash(senha, perfil.senha, async (err, isMatch) => {
-                        if (err || !isMatch)
-                            return res.status(401).send("ID e/ou Senha inválidos. ");
-    
-                        const token = await jwt.sign({
-                            id: perfil.id_perfil,
-                            sec_mode: perfil.sec_mode
-                        },
-                            process.env.JWT_SECRET,
-                            {
-                                expiresIn: "1h"
-                            }
-                        );
+                await verificarHash(senha, perfil.senha, async (err, isMatch) => {
+                    if (err || !isMatch)
+                        return res.status(401).send("ID e/ou Senha inválidos. ");
 
-                        await reg.registrarAcaoPerfil('login', perfil.id_perfil, false);
-                        return res.status(200).json({token});
-                    })
+                    const token = await jwt.sign({
+                        id: perfil.id_perfil,
+                        sec_mode: perfil.sec_mode
+                    },
+                        process.env.JWT_SECRET,
+                        {
+                            expiresIn: "15m"
+                        }
+                    );
+
+                    await reg.registrarAcaoPerfil('login', perfil.id_perfil, false);
+                    return res.status(200).json({ token });
                 })
-                .catch(err => { return res.status(500).send(`Erro: ${err}`) })
+            })
+            .catch(err => { return res.status(500).send(`Erro: ${err}`) })
     },
     async atualizar(req, res) {
         const { nome, senha, avatar, sec_mode } = req.body;
@@ -123,33 +121,36 @@ module.exports = {
             return res.status(400).send("ID não fornecido. ");
 
         if (id !== token.id)
-            return res.status(401).send("O ID informado difere do informado no token. ");
+            return res.status(403).send("O ID informado difere do informado no token. ");
 
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(422).json({ err: errors.array().map(item => { return item.msg }) });
+            return res.status(422).send(errors.array().map(item => { return item.msg }));
         }
 
-        let campos = {nome};
+        let campos = { nome };
 
-        if(senha) {
+        if (senha) {
             campos.senha = await gerarHash(senha);
         }
 
-        if(avatar) {
+        if (avatar) {
+            if(!(await verificarSelecaodeAvatar(avatar))) {
+                return res.status(422).send("Nenhuma imagem válida foi selecionada. ");  
+            } 
             campos.avatar = avatar;
         }
 
-        if(typeof(sec_mode) !== 'undefined') {
+        if (typeof (sec_mode) !== 'undefined') {
             campos.sec_mode = sec_mode;
         }
 
         await Perfil.update(campos, { where: { id_perfil: id } })
-                .then(async () => { 
-                    await reg.registrarAcaoPerfil('alterar', id, false);
-                    return res.status(200).send(); 
-                })
-                .catch(err => { return res.status(500).send(`Erro: ${err}`) })
+            .then(async () => {
+                await reg.registrarAcaoPerfil('alterar', id, false);
+                return res.status(200).send();
+            })
+            .catch(err => { return res.status(500).send(`Erro: ${err}`) })
 
     },
     async excluir(req, res) {
@@ -162,11 +163,11 @@ module.exports = {
         if (id !== token.id)
             return res.status(403).send("O ID informado difere do informado no token. ");
 
-        const t = await Perfil.sequelize.transaction({autocommit: false});
+        const t = await Perfil.sequelize.transaction({ autocommit: false });
 
         try {
-            await Perfil.destroy({ where: { id_perfil: id } }, {transaction: t});
-            await BanhoHist.deleteMany({id_perfil: id});
+            await Perfil.destroy({ where: { id_perfil: id } }, { transaction: t });
+            await BanhoHist.deleteMany({ id_perfil: id });
             await t.commit();
             await reg.registrarAcaoPerfil('excluir', id, false);
             return res.status(200).send();
@@ -185,7 +186,7 @@ module.exports = {
         if (id !== token.id)
             return res.status(403).send("O ID informado difere do informado no token. ");
 
-        await BanhoHist.deleteMany({id_perfil: id})
+        await BanhoHist.deleteMany({ id_perfil: id })
             .then(async () => {
                 await reg.registrarAcaoBanho('excluir', id, false);
                 return res.status(200).send();
@@ -196,8 +197,7 @@ module.exports = {
     },
     async listarImagensParaPerfil(req, res) {
         try {
-            const files = await fs.readdirSync(path.resolve(__dirname, '..', 'avatar'));
-            const images = await files.filter(image => RegExp(/([a-zA-Z0-9\s_\\.\-\(\):])+(.png|.jpg|.jpeg)$/).test(image));
+            const images = await listarArquivosdeImagem();
             return res.status(200).json(images);
         } catch (err) {
             return res.status(500).send(err);

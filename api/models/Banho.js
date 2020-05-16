@@ -19,7 +19,7 @@ class Banho extends Model {
             temp_escolhida: DataTypes.INTEGER
         }, {
             sequelize,
-            tableName: 'banhos',
+            tableName: 'banho_ativo',
         })
     }
 

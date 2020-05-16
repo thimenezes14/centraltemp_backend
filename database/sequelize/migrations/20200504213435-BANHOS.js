@@ -2,7 +2,7 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-      return queryInterface.createTable('banhos', { 
+      return queryInterface.createTable('banho_ativo', { 
         id_banho: {
           type: Sequelize.UUID,
           primaryKey: true,
@@ -33,6 +33,6 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-      return queryInterface.dropTable('banhos');
+      return queryInterface.dropTable('banho_ativo');
   }
 };

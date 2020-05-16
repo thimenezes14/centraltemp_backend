@@ -15,7 +15,11 @@ module.exports.cadastro = [
 
     check('senha')
         .matches(/^[0-9]{4}$/)
-        .withMessage('Por favor, forneça uma senha numérica de 4 dígitos. ')
+        .withMessage('Por favor, forneça uma senha numérica de 4 dígitos. '),
+
+    check('avatar')
+        .matches(/([a-zA-Z0-9\s_\\.\-\(\):])+(.png|.jpg|.jpeg)$/)
+        .withMessage('Por favor, selecione um avatar válido. ')
 ]
 
 module.exports.atualizacao = [
