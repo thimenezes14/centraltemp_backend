@@ -51,29 +51,6 @@ module.exports = {
             return res.status(500).send(`Erro: ${err}`);
         }
     },
-    async detalharBanho(req, res) {
-        try {
-            const { id_banho, id_perfil } = req.query;
-            const { token } = res.locals;
-
-            if(!id_banho)
-                return res.status(400).send(`ID do banho não informado. `);
-
-            if(!id_perfil)
-                return res.status(400).send(`ID do perfil não informado. `);
-
-            if(id_perfil !== token.id)
-                return res.status(401).send(`Você não tem autorização para esta ação. `);
-
-            await BanhoHist.find({id_banho})
-                .then(docs => {
-                    res.status(200).json(docs);
-                })
-                .catch(err => {return res.status(500).send(`Erro: ${err}`)})
-        } catch (err) {
-            return res.status(500).send(`Erro: ${err}`);
-        }
-    },
     async registrar(req, res) {
         try {
             const { id_perfil, temp_escolhida } = req.body;

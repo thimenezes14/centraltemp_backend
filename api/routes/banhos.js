@@ -7,8 +7,7 @@ const validarDados = require('../helpers/verificarDadosBanho');
 const pathname = '/banhos';
 
 routes.get(`${pathname}/verificarchuveiro`, banhosController.verificarChuveiro);
-routes.get(`${pathname}/historico/perfil`, verificarToken, banhosController.listarHistoricoPorPerfil);
-routes.get(`${pathname}/historico/banho`, verificarToken, banhosController.detalharBanho);
+routes.get(`${pathname}/historico`, verificarToken, banhosController.listarHistoricoPorPerfil);
 routes.get(`${pathname}/recomendartemperatura`, verificarToken, banhosController.recomendar);
 
 routes.post(`${pathname}/finalizar`, verificarBanho, banhosController.finalizar);
