@@ -11,7 +11,7 @@
     "temp_ambiente": 22,
     "temp_final": 41,
     "duracao_seg": 399,
-    "ligado": false
+    "ligado": true
   },
   "sensor": {
     "temperatura": 22,

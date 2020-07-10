@@ -56,8 +56,8 @@ module.exports = async (req, res, next) => {
                     next();
                 }
             })
-            .catch(err => { return res.status(500).send(`Erro: ${err}`) });
+            .catch(err => { return res.status(500).send(`Ocorreu um erro durante a comunicação com o chuveiro: ${err}`) });
     } catch (err) {
-        return res.status(500).send(`Erro: ${err}`);
+        return res.status(500).send(`Ocorreu um erro durante a comunicação com o chuveiro: ${err}`);
     }
 }
