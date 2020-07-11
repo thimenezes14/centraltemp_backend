@@ -1,6 +1,7 @@
 const sequelize = require('sequelize');
 const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const moment = require('moment')
 
 const Perfil = require('../models/Perfil');
 const Banho = require('../models/Banho');
@@ -34,7 +35,7 @@ module.exports = {
       }
 
       if (!(await verificarDatadeNascimento(data_nasc))) {
-        return res.status(422).send("Data de nascimento inválida. ");
+        return res.status(422).send("Data de nascimento fora do intervalo permitido. ");
       }
 
       if (!(await verificarNome(avatar))) {
@@ -42,7 +43,7 @@ module.exports = {
       }
 
       let hash = await gerarHash(senha);
-      await Perfil.create({ nome, senha: hash, sexo, data_nasc, avatar });
+      await Perfil.create({ nome, senha: hash, sexo, data_nasc: moment(data_nasc, 'DD/MM/YYYY', true).format('YYYY-MM-DD'), avatar });
 
       await reg.registrarAcaoPerfil('salvar', nome, false);
       return res.status(201).send();
@@ -136,7 +137,7 @@ module.exports = {
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(422).send(errors.array().map(item => { return item.msg }));
+      return res.status(422).send(errors.array().map(item => item.msg));
     }
 
     let campos = { nome };

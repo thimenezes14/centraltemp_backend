@@ -10,7 +10,7 @@ module.exports.cadastro = [
         .withMessage('Você deve selecionar um sexo. '),
 
     check('data_nasc')
-        .matches(/^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$/)
+        .matches(/^((0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/[12]\d{3})$/)
         .withMessage('Você deve fornecer uma data de nascimento válida. '),
 
     check('senha')
