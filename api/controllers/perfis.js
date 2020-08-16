@@ -8,7 +8,7 @@ const BanhoHist = require('../collections/banho');
 
 const gerarHash = require('../helpers/hashing').hash;
 const verificarHash = require('../helpers/hashing').compare;
-const verificarSelecaodeAvatar = require('../helpers/verificarSelecaodeAvatar');
+const {verificarNome, listarArquivosdeImagem} = require('../helpers/verificarSelecaodeAvatar');
 const verificarDatadeNascimento = require('../helpers/verificarDatadeNascimento');
 const reg = require('../../logs/log');
 
@@ -37,7 +37,7 @@ module.exports = {
                 return res.status(422).send("Data de nascimento inválida. ");
             }
 
-            if (!(await verificarSelecaodeAvatar(avatar))) {
+            if (!(await verificarNome(avatar))) {
                 return res.status(422).send("Nenhuma imagem válida foi selecionada. ");
             }
 
@@ -135,9 +135,9 @@ module.exports = {
         }
 
         if (avatar) {
-            if(!(await verificarSelecaodeAvatar(avatar))) {
-                return res.status(422).send("Nenhuma imagem válida foi selecionada. ");  
-            } 
+          if (!(await verificarNome(avatar))) {
+            return res.status(422).send("Nenhuma imagem válida foi selecionada. ");
+          } 
             campos.avatar = avatar;
         }
 
