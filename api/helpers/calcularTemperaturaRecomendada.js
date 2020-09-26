@@ -41,7 +41,7 @@ module.exports.classificar = async dados => {
     if (!Array.isArray(dados)) {
         throw new Error("Dados informados não são array. ");
     }
-
+    
     let historico = await dados.map(dado => {
         const {fator, limites} = obterFatorDeVariacao(dado.temp_ambiente);
         let x;
