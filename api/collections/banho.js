@@ -19,7 +19,7 @@ const Banho = new mongoose.Schema({
         required: true
     },
     duracao_seg: {
-        type: Number,
+        type: String,
         required: true
     },
     data_hora_insercao: {
