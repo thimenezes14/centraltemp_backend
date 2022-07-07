@@ -26,7 +26,7 @@
     "jsonwebtoken": "^8.5.1",
     "mean-normalization": "^1.0.1",
     "ml-regression-multivariate-linear": "^2.0.3",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "mongoose": "^5.9.5",
     "morgan": "^1.10.0",
     "nodemailer": "^6.4.6",
