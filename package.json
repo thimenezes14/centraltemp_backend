@@ -23,7 +23,7 @@
     "express-validator": "^6.4.0",
     "genstats": "0.0.1",
     "json-server": "^0.16.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "mean-normalization": "^1.0.1",
     "ml-regression-multivariate-linear": "^2.0.3",
     "moment": "^2.24.0",
